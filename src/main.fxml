@@ -1,0 +1,42 @@
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane fx:id="bp" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="MainController">
+
+    <top>
+        <MenuBar>
+            <Menu text="File">
+                <MenuItem text="New"  onAction="#onFileNew"  accelerator="N" />
+                <MenuItem text="Open" onAction="#onFileOpen" accelerator="O" />
+                <MenuItem text="Save"    />
+                <MenuItem text="Save As" />
+                <MenuItem text="Close"   />
+                <SeparatorMenuItem />
+                <MenuItem text="Exit" onAction="#onExit" />
+            </Menu>
+            <Menu text="Edit">
+            </Menu>
+        </MenuBar>
+    </top>
+
+    <bottom>
+        <AnchorPane prefHeight="40.0" prefWidth="600.0" BorderPane.alignment="CENTER">
+            <children>
+                <Label fx:id="co"   layoutX="14.0"  layoutY="9.0"  text="co"   />
+                <Label fx:id="rgb"  layoutX="144.0" layoutY="13.0" text="RGB"  />
+                <Label fx:id="zoom" layoutX="245.0" layoutY="9.0"  text="zoom" />
+            </children>
+        </AnchorPane>
+    </bottom>
+
+    <center>
+        <ScrollPane fx:id="sp" prefWidth="${bp.width}" prefHeight="${bp.height}" BorderPane.alignment="CENTER" onMouseMoved="#onMouseMoved">
+            <content>
+                <Canvas fx:id="canvas" width="200" height="200" />
+            </content>
+        </ScrollPane>
+    </center>
+
+</BorderPane>
+
