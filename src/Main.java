@@ -1,8 +1,8 @@
 //
-// how to add support for javafx:
-//  https://www.jetbrains.com/help/idea/javafx.html
+// how to add support for javafx: https://www.jetbrains.com/help/idea/javafx.html
 //
 //images, javafx, and pixels: https://www.tutorialspoint.com/javafx/javafx_images.htm
+//                            https://www.programcreek.com/java-api-examples/?class=javafx.scene.image.PixelWriter&method=setPixels
 //
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -28,3 +28,4 @@ public class Main extends Application {
     }
 
 }
+

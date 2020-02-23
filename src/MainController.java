@@ -7,7 +7,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.image.Image;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
@@ -15,7 +14,6 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -28,8 +26,8 @@ public class MainController implements Initializable {
     @FXML Canvas     canvas;    ///< drawing canvas
     private MainView mv;        ///< view in MVC
 
-    //ImageData image;
-    Image image;
+    ImageData image;
+    //Image image;
     //better to migrate to file as opposed to using windows registry.
     // see http://www.davidc.net/programming/java/java-preferences-using-file-backing-store
     private static Preferences prefs = Preferences.userRoot();  ///< for user preferences ("dir" is last dir)
@@ -74,19 +72,12 @@ public class MainController implements Initializable {
         if (list == null || list.size() < 1)    return;
         for (File f : list) {
             System.out.println( f );
-            try {
-                this.image = new Image( new FileInputStream(f) );
-                this.canvas.setWidth(  this.image.getWidth()  * this.mv.zoom );
-                this.canvas.setHeight( this.image.getHeight() * this.mv.zoom );
-
-                //this.sp.setVmax( this.image.getHeight() );
-
-                this.mv.paint();
-                break;
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.err.println( "exception: error reading " + f + " " + e );
-            }
+            this.image = ImageData.load( f.getAbsolutePath() );
+            this.canvas.setWidth(  this.image.mW * this.mv.zoom );
+            this.canvas.setHeight( this.image.mH * this.mv.zoom );
+            this.mv.paint();
+            //break;
+            return;
         }
 
         Parent root = null;
@@ -96,6 +87,7 @@ public class MainController implements Initializable {
         } catch (Exception e) {  System.out.println( "exception: " + e );  }
 
         MainController c = loader.getController();
+        //c.image = ;  //set image
 
         Stage stage = new Stage();
         Scene scene = new Scene( root );

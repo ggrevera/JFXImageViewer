@@ -25,10 +25,14 @@
     as GH (Generally Hectic) should NOT incorporate this code into
     their proprietary programs.)
  */
-import javax.imageio.ImageIO;
+
+import javafx.scene.image.Image;
+import javafx.scene.image.PixelFormat;
+import javafx.scene.image.PixelReader;
+
 import javax.swing.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
+import java.io.FileInputStream;
 //----------------------------------------------------------------------
 /** \brief class containing the actual pixel data values (note that this
  *  class is abstract)
@@ -71,58 +75,94 @@ abstract public class ImageData {
      */
     public int[]  mDisplayData;
 
+    public Image  displayImage;
     public BufferedImage  mDisplayImage  = null;  ///< \brief (possibly modified input) image drawn on screen
-  //----------------------------------------------------------------------
-  /** \brief Given the name of an input image file, this method determine
-   *  the type of image and then invokes the appropriate constructor.
-   *
-   *  Note that this static function returns the appropriate subclass of
-   *  ImageData depending upon the type of image data (color or gray).
-   *  \param fileName name of input image file
-   *  \returns an instance of the ImageData class
-   */
-  public static ImageData load ( String fileName ) {
-      //load the image
-      String up = fileName.toUpperCase();
-      if (up.endsWith(".PPM") || up.endsWith(".PNM") || up.endsWith(".PGM")) {
-          PNMHelper p = new PNMHelper( fileName );
-          if (p.mMin < 0) {
-              JOptionPane.showMessageDialog( null,
-                      "Warning: \n\nMin value of " + p.mMin + " is less than 0. \n ",
-                      "Warning", JOptionPane.WARNING_MESSAGE );
-          }
-          if (p.mMax > 255) {
-              JOptionPane.showMessageDialog( null,
-                      "Warning: \n\nMax value of " + p.mMax + " exceeds limit of 255. \n ",
-                      "Warning", JOptionPane.WARNING_MESSAGE );
-          }
-          if (p.mSamplesPerPixel == 1) {
-              return new GrayImageData( p.mData, p.mW, p.mH );
-          } else {
-              assert p.mSamplesPerPixel == 3;
-              return new ColorImageData( p.mData, p.mW, p.mH );
-          }
-      }
+    //----------------------------------------------------------------------
+    /** \brief Given the name of an input image file, this method determine
+     *  the type of image and then invokes the appropriate constructor.
+     *
+     *  Note that this static function returns the appropriate subclass of
+     *  ImageData depending upon the type of image data (color or gray).
+     *  \param fileName name of input image file
+     *  \returns an instance of the ImageData class
+     */
+    public static ImageData load ( String fileName ) {
+        //load the image
+        String up = fileName.toUpperCase();
+        if (up.endsWith(".PPM") || up.endsWith(".PNM") || up.endsWith(".PGM")) {
+            PNMHelper p = new PNMHelper( fileName );
+            if (p.mMin < 0) {
+                JOptionPane.showMessageDialog( null,
+                        "Warning: \n\nMin value of " + p.mMin + " is less than 0. \n ",
+                        "Warning", JOptionPane.WARNING_MESSAGE );
+            }
+            if (p.mMax > 255) {
+                JOptionPane.showMessageDialog( null,
+                        "Warning: \n\nMax value of " + p.mMax + " exceeds limit of 255. \n ",
+                        "Warning", JOptionPane.WARNING_MESSAGE );
+            }
+            if (p.mSamplesPerPixel == 1) {
+                return new GrayImageData( p.mData, p.mW, p.mH );
+            } else {
+                assert p.mSamplesPerPixel == 3;
+                return new ColorImageData( p.mData, p.mW, p.mH );
+            }
+        }
 
-      File f = new File( fileName );
-      BufferedImage bi = null;
-      try {
-          bi = ImageIO.read( f );
-      } catch (Exception e) {
-          System.err.println( "error reading file" );
-      }
-      assert bi != null;
-      int w  = bi.getWidth();
-      int h  = bi.getHeight();
-      if ( bi.getType() == BufferedImage.TYPE_USHORT_GRAY ||
-           bi.getType() == BufferedImage.TYPE_BYTE_GRAY   ||
-           bi.getType() == BufferedImage.TYPE_BYTE_BINARY ) {
-          return new GrayImageData( bi, w, h );
-      }
-      //otherwise, it must be color
-      //assert bi.getType() == BufferedImage.TYPE_INT_RGB;
-      return new ColorImageData( bi, w, h );
-  }
+        //Image image = new Image( fileName );
+        Image image = null;
+        try {
+            image = new Image(new FileInputStream(fileName));
+        } catch (Exception e) {
+            System.out.println( "error opening " + fileName );
+        }
+        PixelReader pr = image.getPixelReader();
+        PixelFormat.Type type = pr.getPixelFormat().getType();
+        switch (type) {
+            case BYTE_BGRA:
+                System.out.println( "pixel type: BYTE_BGRA" );
+                break;
+            case BYTE_BGRA_PRE:
+                System.out.println( "pixel type: BYTE_BGRA_PRE" );
+                break;
+            case BYTE_INDEXED:
+                System.out.println( "pixel type: BYTE_INDEXED" );
+                break;
+            case BYTE_RGB:
+                System.out.println( "pixel type: BYTE_RGB" );
+                break;
+            case INT_ARGB:
+                System.out.println( "pixel type: INT_ARGB" );
+                break;
+            case INT_ARGB_PRE:
+                System.out.println( "pixel type: INT_ARGB_PRE" );
+                break;
+            default:
+                System.err.println( "unrecognized image pixel type: " + type );
+                break;
+        }
+/*
+        File f = new File( fileName );
+        BufferedImage bi = null;
+        try {
+            bi = ImageIO.read( f );
+        } catch (Exception e) {
+            System.err.println( "error reading file" );
+        }
+        assert bi != null;
+        int w  = bi.getWidth();
+        int h  = bi.getHeight();
+        if ( bi.getType() == BufferedImage.TYPE_USHORT_GRAY ||
+             bi.getType() == BufferedImage.TYPE_BYTE_GRAY   ||
+             bi.getType() == BufferedImage.TYPE_BYTE_BINARY ) {
+            return new GrayImageData( bi, w, h );
+        }
+        //otherwise, it must be color
+        //assert bi.getType() == BufferedImage.TYPE_INT_RGB;
+        return new ColorImageData( bi, w, h );
+*/
+        return new ColorImageData( image );
+    }
 
 }
 //----------------------------------------------------------------------

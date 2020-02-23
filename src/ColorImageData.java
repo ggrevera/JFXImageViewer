@@ -24,6 +24,12 @@
     as GH (Generally Hectic) should NOT incorporate this code into
     their proprietary programs.)
  */
+import javafx.scene.image.Image;
+import javafx.scene.image.PixelReader;
+import javafx.scene.image.PixelWriter;
+import javafx.scene.image.WritableImage;
+import javafx.scene.paint.Color;
+
 import javax.swing.*;
 import java.awt.image.BufferedImage;
 //----------------------------------------------------------------------
@@ -59,6 +65,35 @@ public class ColorImageData extends ImageData {
         init( w, h );
     }
     //----------------------------------------------------------------------
+    protected ColorImageData ( Image image ) {
+        PixelReader pr = image.getPixelReader();
+        int w = (int)image.getWidth();
+        int h = (int)image.getHeight();
+        mOriginalData = new int[ w * h * 3 ];
+        int j = 0;
+        for (int y=0; y<h; y++) {
+            for (int x=0; x<w; x++) {
+                Color c = pr.getColor( x, y );
+                int r = (int)(c.getRed()   * 255 + 0.5);
+                int g = (int)(c.getGreen() * 255 + 0.5);
+                int b = (int)(c.getBlue()  * 255 + 0.5);
+
+                if (r < 0)    r = 0;
+                if (g < 0)    g = 0;
+                if (b < 0)    b = 0;
+
+                if (r > 255)    r = 255;
+                if (g > 255)    g = 255;
+                if (b > 255)    b = 255;
+
+                mOriginalData[j++] = r;
+                mOriginalData[j++] = g;
+                mOriginalData[j++] = b;
+            }
+        }
+        init( w, h );
+    }
+    //----------------------------------------------------------------------
     /** \brief This ctor constructs a ColorImageData object from an array
      *  of rgb pixel values and the width and height of the image.
      *  \param unpacked array of rgb values
@@ -76,7 +111,8 @@ public class ColorImageData extends ImageData {
         mH = h;
         mIsColor = true;
 
-        //determine the min and max values
+        //determine the min and max values,
+        // and copy original data to display data.
         mMin = mMax = mOriginalData[ 0 ];
         if (mDisplayData == null)
             mDisplayData = new int[ mOriginalData.length ];
@@ -103,6 +139,7 @@ public class ColorImageData extends ImageData {
         assert mIsColor;
         assert unpacked.length == mW*mH*3;
 
+        /** old
         int[] packed = new int[ mW*mH ];
         for (int i=0,j=0; i<packed.length; i++) {
             int r = unpacked[j++];
@@ -119,6 +156,30 @@ public class ColorImageData extends ImageData {
             packed[i] = (r<<16) | (g<<8) | b;
         }
         mDisplayImage.setRGB( 0, 0, mW, mH, packed, 0, mW );
+         */
+        //create a writable image
+        WritableImage wImage = new WritableImage( mW, mH );
+        PixelWriter pixelWriter = wImage.getPixelWriter();
+
+        //not very efficient (but ok for now):
+        int i = 0;
+        for (int r=0; r<mH; r++) {
+            for (int c=0; c<mW; c++) {
+                int red = unpacked[ i++ ];
+                int g   = unpacked[ i++ ];
+                int b   = unpacked[ i++ ];
+                if (red < 0)      red = 0;
+                if (red > 255)    red = 255;
+                if (g < 0)        g = 0;
+                if (g > 255)      g = 255;
+                if (b < 0)        b = 0;
+                if (b > 255)      b = 255;
+                Color color = new Color( red/255.0, g/255.0, b/255.0, 1.0 );
+                pixelWriter.setColor( c, r, color );
+            }
+        }
+
+        this.displayImage = wImage;
     }
 
     public void old_unpacked2packed ( int[] unpacked, int[] packed ) {

@@ -26,15 +26,18 @@
  */
 //package jimageviewer;
 
+import javafx.scene.image.PixelWriter;
+import javafx.scene.image.WritableImage;
+import javafx.scene.paint.Color;
+
 import java.awt.image.BufferedImage;
-import javax.swing.JOptionPane;
 //----------------------------------------------------------------------
 /** \brief class containing the actual pixel data for a gray image
  *  (one value per pixel)
  */
 public class GrayImageData extends ImageData {
     /** \brief Gray image data represented as a 2D array.
-     *  \todo allocate and initialize to speed up 2D array indexing.
+     *  \todo allocate & initialize to speed up 2D array indexing.
      */
     //----------------------------------------------------------------------
     /** \brief Given a buffered image, this ctor reads the image data, stores
@@ -74,7 +77,8 @@ public class GrayImageData extends ImageData {
         mH = h;
         mIsColor = false;
 
-        //determine the min and max values
+        //determine the min and max values,
+        // and copy original data to display data.
         mMin = mMax = mOriginalData[ 0 ];
         if (mDisplayData == null)
             mDisplayData = new int[ mOriginalData.length ];
@@ -104,6 +108,7 @@ public class GrayImageData extends ImageData {
         assert !mIsColor;
         assert unpacked.length == mW*mH;
 
+        /* old
         int[] packed = new int[ unpacked.length ];
         for (int i=0; i<unpacked.length; i++) {
             int g = unpacked[i];
@@ -112,6 +117,38 @@ public class GrayImageData extends ImageData {
             packed[i] = (g<<16) | (g<<8) | g;
         }
         mDisplayImage.setRGB( 0, 0, mW, mH, packed, 0, mW );
+         */
+
+        //create a writable image
+        WritableImage wImage = new WritableImage( mW, mH );
+        PixelWriter pixelWriter = wImage.getPixelWriter();
+
+        /* more efficient:
+        WritablePixelFormat<IntBuffer> format = WritablePixelFormat.getIntArgbInstance();
+        //pack (must include alpha)
+        int[] packed = new int[ unpacked.length ];
+        for (int i=0; i<unpacked.length; i++) {
+            int g = unpacked[i];
+            if (g < 0)      g = 0;
+            if (g > 255)    g = 255;
+            packed[i] = 0xff | (g<<16) | (g<<8) | g;
+        }
+        pixelWriter.setPixels( 0, 0, mW, mH, format, packed, 0, mW );
+         */
+
+        //not very efficient (but ok for now):
+        int i = 0;
+        for (int r=0; r<mH; r++) {
+            for (int c=0; c<mW; c++) {
+                int gray = unpacked[ i++ ];
+                if (gray < 0)      gray = 0;
+                if (gray > 255)    gray = 255;
+                Color color = new Color( gray/255.0, gray/255.0, gray/255.0, 1.0 );
+                pixelWriter.setColor( c, r, color );
+            }
+        }
+
+        this.displayImage = wImage;
     }
     //----------------------------------------------------------------------
     /** \brief Given a pixel's row and column location, this function

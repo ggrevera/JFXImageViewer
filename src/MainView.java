@@ -7,7 +7,7 @@ class MainView {
     boolean mouseMoveValid;
     double mouseX;
     double mouseY;
-    double zoom = 2.0;
+    double zoom = 1.0;
     //-----------------------------------------------------------------------
     MainView ( MainController p ) {
         System.out.println( "MainView" );
@@ -24,8 +24,8 @@ class MainView {
             gc.fillRect( 0, 0, this.parent.bp.getPrefWidth(), this.parent.bp.getPrefHeight() );
 
         if (this.parent.image != null)
-            gc.drawImage( this.parent.image, 0, 0, this.parent.image.getWidth() *this.zoom,
-                                                          this.parent.image.getHeight()*this.zoom );
+            gc.drawImage( this.parent.image.displayImage, 0, 0, this.parent.image.mW * this.zoom,
+                                                                       this.parent.image.mH * this.zoom );
 
         if (this.mouseMoveValid) {
             System.out.println();
@@ -39,8 +39,8 @@ class MainView {
             double xOff = 0;
             double yOff = 0;
             if (this.parent.image != null) {
-                xOff = this.parent.sp.getHvalue() * this.parent.image.getWidth();
-                yOff = this.parent.sp.getVvalue() * this.parent.image.getHeight();
+                xOff = this.parent.sp.getHvalue() * this.parent.image.mW;
+                yOff = this.parent.sp.getVvalue() * this.parent.image.mH;
             }
             String s = "(" + this.mouseX + "," + this.mouseY + ")";
             gc.setFill( Color.BLACK );
