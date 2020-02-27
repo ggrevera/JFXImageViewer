@@ -163,6 +163,50 @@ abstract public class ImageData {
 */
         return new ColorImageData( image );
     }
+    //----------------------------------------------------------------------
+    /** \brief  Given an instance (of a subclass) of ImageData, construct
+     * and return a clone of it.
+     *
+     *  Note that this static function returns the appropriate subclass of
+     *  ImageData depending upon the type of image data (color or gray).
+     *
+     *  \param    other is the object to clone
+     *  \returns  an instance of the ImageData class (actually the correct
+     *            subclass of ImageData because ImageData is abstract)
+     */
+    static public ImageData clone ( ImageData other ) {
+        if (other instanceof GrayImageData) {
+            GrayImageData copy = new GrayImageData( other.mOriginalData, other.mW, other.mH );
+            copy.mIsAudio = other.mIsAudio;
+            copy.mRate = other.mRate;
+            return copy;
+        }
+        if (other instanceof ColorImageData) {
+            ColorImageData copy = new ColorImageData( other.mOriginalData, other.mW, other.mH );
+            copy.mIsAudio = other.mIsAudio;
+            copy.mRate = other.mRate;
+            return copy;
+        }
+        return null;
+    }
+    //----------------------------------------------------------------------
+    /** this function is NOT in the original start up app. it simply
+     * copies the display data to the original data (and sets min and
+     * max accordingly. it was added to make pipelines of Strategies
+     * easier. for example, opening is erosion followed by dilation.
+     * so OpeningStrategy = ErosionStrategy then makePermanent then
+     * DilationStrategy then makePermanent. this approach may be used
+     * with any strategy: XStategy then makePermanent.
+     */
+    public void makePermanent ( ) {
+        this.mMax = this.mMin = this.mDisplayData[ 0 ];
+        for (int i = 0; i < this.mDisplayData.length; i++) {
+            int v = this.mDisplayData[ i ];
+            if (v < this.mMin) this.mMin = v;
+            if (v > this.mMax) this.mMax = v;
+            this.mOriginalData[ i ] = v;
+        }
+    }
 
 }
 //----------------------------------------------------------------------
